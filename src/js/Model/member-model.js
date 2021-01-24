@@ -1,33 +1,109 @@
 import Model from './Model';
 import jsonPlaceholderDb from '../API/jsonPlaceholder';
+import cinema from '../API/cinema';
+import { getToken } from '../Utils/utils';
 
 var memberModel = new Model({ collectionName: 'members', docName: 'member' });
 
 export async function getMembers() {
-	return memberModel.getCollectionDocs();
+	let token = getToken();
+	try {
+		var response = await cinema({
+			method: 'get',
+			url: '/members',
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		});
+	} catch (error) {
+		console.log(error);
+		throw error;
+	}
+	return response.data.members;
 }
 
-export async function createMember(newMember) {
-	return memberModel.createDoc(newMember);
+export async function findById(memberId) {
+	let token = getToken();
+	try {
+		var response = await cinema({
+			method: 'get',
+			url: `/members/${memberId}`,
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		});
+	} catch (error) {
+		console.log(error);
+		throw error;
+	}
+	return response.data.member;
+}
+
+export async function createMember(memberDetails) {
+	let token = getToken();
+	try {
+		var response = await cinema({
+			method: 'post',
+			url: `/members`,
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+			data: memberDetails,
+		});
+	} catch (error) {
+		console.log(error);
+		throw error;
+	}
 }
 
 export async function updateMember(memberId, memberDetails) {
-	return memberModel.updateDoc(memberId, memberDetails);
+	let token = getToken();
+	try {
+		var response = await cinema({
+			method: 'put',
+			url: `/members/${memberId}`,
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+			data: memberDetails,
+		});
+	} catch (error) {
+		console.log(error);
+		throw error;
+	}
 }
 
 export async function deleteMember(memberId) {
-	memberModel.deleteDoc(memberId);
+	let token = getToken();
+	try {
+		var response = await cinema({
+			method: 'delete',
+			url: `/members/${memberId}`,
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		});
+	} catch (error) {
+		console.log(error);
+		throw error;
+	}
 }
 
 export async function addMemberSubscription(subscriptionDetails) {
-	var { memberId, movieId, date } = subscriptionDetails;
-	var member = members.find(currMember => currMember.id == memberId);
-	member.movies = [...member.movies, { movieId, date }];
-	return new Promise((resolve, reject) => {
-		setTimeout(() => {
-			resolve([...members]);
-		}, 0);
-	});
+	let token = getToken();
+	try {
+		var response = await cinema({
+			method: 'post',
+			url: `/subscriptions`,
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+			data: subscriptionDetails,
+		});
+	} catch (error) {
+		console.log(error);
+		throw error;
+	}
 }
 
 export async function resetMembers() {

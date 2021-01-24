@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Grid, Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { useTheme } from '@material-ui/core/styles';
@@ -8,6 +8,7 @@ import MovieDetails from './MovieDetails';
 import { MainContext } from '../../Context/main-context';
 import MoviesNav from './MoviesNav';
 import FindMovie from './FindMovie';
+import cinema from '../../API/cinema';
 
 const useStyles = makeStyles({
 	navContainer: {
@@ -20,15 +21,16 @@ const useStyles = makeStyles({
 	},
 });
 
-export default function AllMovies({ match, navIndex, setNavIndex }) {
-	var { store } = useContext(MainContext);
-	var theme = useTheme();
-	var [state, dispatch] = store;
+export default function AllMovies(props) {
+	let { match, navIndex, setNavIndex } = props;
+	let { store, token } = useContext(MainContext);
+	let theme = useTheme();
+	let [state, dispatch] = store;
 
-	var [filterString, setFilterString] = useState('');
+	let [filterString, setFilterString] = useState('');
+	let [movies, setMovies] = useState([]);
+	let user = state.authUser;
 
-	var movies = [...state.movies];
-	var user = state.authUser;
 	if (filterString.length > 2) {
 		movies = movies.filter(function (movie) {
 			let val = movie.name.toLowerCase().includes(filterString.toLowerCase());
@@ -36,6 +38,11 @@ export default function AllMovies({ match, navIndex, setNavIndex }) {
 		});
 	}
 	var classes = useStyles();
+
+	useEffect(() => {
+		if (movies.length < 1) setMovies(state.movies);
+	});
+
 	return (
 		<Grid
 			item
@@ -90,7 +97,7 @@ export default function AllMovies({ match, navIndex, setNavIndex }) {
 									xl={3}
 									key={movie.id}
 									className={classes.movieCardContainer}>
-									<MovieDetails {...{ movie, match }} />
+									<MovieDetails {...{ movie, match, deleteMovie }} />
 								</Grid>
 							);
 					  })
@@ -104,5 +111,9 @@ export default function AllMovies({ match, navIndex, setNavIndex }) {
 	}
 	function onReset() {
 		resetMovies();
+	}
+	function deleteMovie(movieId) {
+		let newList = movies.filter(movie => movie.id !== movieId);
+		setMovies(newList);
 	}
 }

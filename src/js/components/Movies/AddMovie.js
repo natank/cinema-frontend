@@ -1,10 +1,11 @@
 import React, { useContext } from 'react';
+import { useHistory } from 'react-router-dom';
 import { Typography, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
+import { MoviesManagementContext } from '../../Context/movies-management-context';
 
 import MoviesNav from './MoviesNav';
 import MovieForm from './MovieForm';
-import { MainContext } from '../../Context/main-context';
 import { createMovie } from '../../Model/movie-model';
 
 var useStyles = makeStyles(theme => ({
@@ -14,10 +15,10 @@ var useStyles = makeStyles(theme => ({
 }));
 
 export default function AddMovie(props) {
-	var { navIndex, setNavIndex } = props;
-	var { store } = useContext(MainContext);
-	var [state, dispatch] = store;
-	var classes = useStyles();
+	const { moviesManagementUrl } = useContext(MoviesManagementContext);
+	let { navIndex, setNavIndex } = props;
+	let classes = useStyles();
+	var history = useHistory();
 	return (
 		<Grid
 			item
@@ -42,11 +43,12 @@ export default function AddMovie(props) {
 
 	async function onCreateMovie(movieDetails) {
 		var details = { ...movieDetails };
-		details.generes = details.generes.split(',');
-		var movie = await createMovie(details);
-		dispatch({
-			type: 'ADD_MOVIE',
-			payload: { movie: { ...movie } },
-		});
+		details.generes = details.genres.split(',');
+		try {
+			await createMovie(details);
+		} catch (error) {
+			console.log(`error occured: ${error}`);
+		}
+		history.push(moviesManagementUrl);
 	}
 }

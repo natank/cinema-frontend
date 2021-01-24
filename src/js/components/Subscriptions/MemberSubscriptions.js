@@ -15,9 +15,9 @@ export default function MemberSubscriptions({ member }) {
 	var classes = useStyles();
 	const { store, moviesManagementUrl } = useContext(MainContext);
 	var [state, dispatch] = store;
+	var subscribedMovies = member.subscriptions;
 	var allMovies = [...state.movies];
-	var subscribedMovies = member.movies;
-	const memberId = member.id;
+
 	if (subscribedMovies) return <SubscribedMovies />;
 	else return <div>No subscriptions yet</div>;
 
@@ -25,7 +25,7 @@ export default function MemberSubscriptions({ member }) {
 		return (
 			<List component='ul' className={classes.memberMoviesWatched}>
 				{subscribedMovies.map(subscribedMovie => {
-					var movie = getMovieById(subscribedMovie.movieId);
+					var movie = getMovieById(subscribedMovie.movie._id);
 					if (!movie) return null;
 					return (
 						<ListItem disableGutters key={movie.id}>

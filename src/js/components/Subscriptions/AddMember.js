@@ -66,10 +66,15 @@ export default function AddMember({ navIndex, setNavIndex }) {
 
 	async function onCreateMember(memberDetails) {
 		var details = { ...memberDetails, movies: [] };
-		var member = await createMember(details);
+		try {
+			await createMember(details);
+		} catch (error) {
+			console.log(error);
+			throw error;
+		}
 		dispatch({
 			type: 'ADD_MEMBER',
-			payload: { member: { ...member } },
+			payload: { member: { ...memberDetails } },
 		});
 	}
 }

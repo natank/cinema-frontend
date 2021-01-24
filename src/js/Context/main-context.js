@@ -16,7 +16,11 @@ import {
 export var MainContext = createContext();
 
 export function MainContextProvider(props) {
-	var sessionUser = JSON.parse(sessionStorage.getItem('user'));
+	try {
+		var sessionUser = JSON.parse(sessionStorage.getItem('user'));
+	} catch (err) {
+		sessionUser = undefined;
+	}
 
 	const initialState = {
 		users: [],
@@ -33,8 +37,7 @@ export function MainContextProvider(props) {
 		authUser: authUserReducer,
 	});
 
-	const result = useReducer(rootReducer, initialState);
-	const [state, dispatch] = result;
+	const [state, dispatch] = useReducer(rootReducer, initialState);
 	const store = useMemo(() => [state, dispatch], [state]);
 
 	var { authUser } = state;
@@ -50,8 +53,9 @@ export function MainContextProvider(props) {
 		else history.push('/');
 	}, [authUser]);
 
+	var token = localStorage.getItem('token');
 	return (
-		<MainContext.Provider value={{ store, ...urls }}>
+		<MainContext.Provider value={{ store, token, ...urls }}>
 			{props.children}
 		</MainContext.Provider>
 	);

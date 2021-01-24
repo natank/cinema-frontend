@@ -24,7 +24,11 @@ const useStyles = makeStyles({
 	},
 });
 
-export default function MovieDetails({ movie, match }) {
+export default function MovieDetails({
+	movie,
+	match,
+	deleteMovie: removeMovie,
+}) {
 	var classes = useStyles();
 	if (!movie) return null;
 
@@ -36,7 +40,12 @@ export default function MovieDetails({ movie, match }) {
 	var deleteMovieRoute = `${match.url}/delete/${movie.id}`;
 	var isUserAllowedToDelete = checkAccessToRoute(deleteMovieRoute, authUser);
 	var isUserAllowedToEdit = checkAccessToRoute(editMovieRoute, authUser);
-	var movieSubscriptions = getMovieSubscriptions();
+	try {
+		var movieSubscriptions = getMovieSubscriptions();
+	} catch (error) {
+		console.log(movie);
+	}
+
 	return (
 		<Card variant='outlined'>
 			<Grid container>
@@ -53,16 +62,17 @@ export default function MovieDetails({ movie, match }) {
 							className={classes.movieTitle}>
 							{`${movie.name}, ${new Date(movie.premiered).getFullYear()} `}
 						</Typography>
-						<Typography gutterBottom>{`Generes: ${movie.generes.map(
+						<Typography gutterBottom>{`Generes: ${movie.genres.map(
 							genere => genere
 						)}`}</Typography>
-						{movieSubscriptions.length > 0 ?
+						{movieSubscriptions.length > 0 ? (
 							<React.Fragment>
 								<Typography variant='h6'>Subscriptions</Typography>
 								<MovieSubscriptions movie={movie} />
 							</React.Fragment>
-							: <Typography variant='h6'>No Subscriptions</Typography>
-						}
+						) : (
+							<Typography variant='h6'>No Subscriptions</Typography>
+						)}
 
 						<CardActions>
 							{isUserAllowedToEdit ? (
@@ -89,6 +99,7 @@ export default function MovieDetails({ movie, match }) {
 		var movieId = movie.id;
 		try {
 			await deleteMovie(movie.id);
+			removeMovie(movie.id);
 		} catch (err) {
 			console.log(err);
 		}
@@ -100,19 +111,23 @@ export default function MovieDetails({ movie, match }) {
 
 	function getMovieSubscriptions() {
 		// loop through all the members. Filter in members who are subscribed to movie
-		return members ? members.reduce(function createSubscription(acc, member) {
-		  var subscription = member.movies && member.movies.find(currMovie => currMovie.movieId == movie.id)
-		  if (subscription) {
-			subscription = {
-			  member: {
-				id: member.id,
-				name: member.name
-			  },
-			  date: subscription.date
-			}
-			return [...acc, subscription]
-		  }
-		  return acc
-		}, []) : null
-	  }
+		return members
+			? members.reduce(function createSubscription(acc, member) {
+					var subscription =
+						member.movies &&
+						member.movies.find(currMovie => currMovie.movieId == movie.id);
+					if (subscription) {
+						subscription = {
+							member: {
+								id: member.id,
+								name: member.name,
+							},
+							date: subscription.date,
+						};
+						return [...acc, subscription];
+					}
+					return acc;
+			  }, [])
+			: null;
+	}
 }

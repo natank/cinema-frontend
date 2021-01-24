@@ -1,22 +1,93 @@
+import { useContext } from 'react';
+
 import Model from './Model';
 import initMovies from '../API/tvmaze';
+import { getToken } from '../Utils/utils';
+import cinema from '../API/cinema';
 
 var movieModel = new Model({ collectionName: 'movies', docName: 'movie' });
 
+export async function findMovie(movieId) {
+	let token = getToken();
+	try {
+		var result = await cinema({
+			url: `/movies/${movieId}`,
+			method: 'get',
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		});
+		return result.data.movie;
+	} catch (error) {
+		console.log(error);
+		throw error;
+	}
+}
+
 export async function getMovies() {
-	return movieModel.getCollectionDocs();
+	let token = getToken();
+	try {
+		var result = await cinema({
+			url: `/movies`,
+			method: 'get',
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		});
+		return result.data.movies;
+	} catch (error) {
+		console.log(error);
+		throw error;
+	}
 }
 
 export async function createMovie(newMovie) {
-	return movieModel.createDoc(newMovie);
+	let token = getToken();
+	try {
+		var result = await cinema({
+			url: `/movies`,
+			method: 'post',
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+			data: newMovie,
+		});
+	} catch (error) {
+		console.log(error);
+		throw error;
+	}
 }
 
 export async function deleteMovie(movieId) {
-	movieModel.deleteDoc(movieId);
+	let token = getToken();
+	try {
+		var result = await cinema({
+			url: `/movies/delete/${movieId}`,
+			method: 'get',
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		});
+	} catch (error) {
+		throw error;
+	}
 }
 
 export async function updateMovie(movieId, movieDetails) {
-	return movieModel.updateDoc(movieId, movieDetails);
+	let token = getToken();
+	try {
+		var result = await cinema({
+			url: `/movies/${movieId}`,
+			method: 'put',
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+			data: movieDetails,
+		});
+		return result.data.movie;
+	} catch (error) {
+		throw error;
+	}
 }
 
 export async function resetMovies() {

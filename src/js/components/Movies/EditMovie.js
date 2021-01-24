@@ -1,72 +1,59 @@
-import React, { useContext, useState, useEffect } from 'react'
-import { useHistory } from 'react-router-dom'
-import {Typography, Box, Grid} from '@material-ui/core'
-import {makeStyles} from '@material-ui/core/styles'
-
-import { MainContext } from '../../Context/main-context'
+import React, { useContext, useState, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
+import { Typography, Box, Grid } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
+import * as Movie from '../../Model/movie-model';
 import MovieForm from './MovieForm';
-import { updateMovie } from '../../Model/movie-model'
-import { compareItemId } from '../../Utils/utils'
-import { MoviesManagementContext } from '../../Context/movies-management-context'
+import { compareItemId } from '../../Utils/utils';
+import { MoviesManagementContext } from '../../Context/movies-management-context';
 
 var useStyles = makeStyles(theme => ({
-    title: {
-        marginBottom: "1em"
-    }
-}))
+	title: {
+		marginBottom: '1em',
+	},
+}));
 
 export default function EditMovie({ match, navIndex, setNavIndex }) {
-    var { store } = useContext(MainContext);
-    var [state, dispatch] = store;
-    var movieId = match.params.id;
-    var { movies } = state;
-    var [componentState, setComponentState] = useState({
-        redirect: false,
-        updatedMovieDetails: {}
-    })
-    var editedMovie = movies.find(compareItemId(movieId))
-    var { moviesManagementUrl } = useContext(MoviesManagementContext)
-    var history = useHistory();
-    var classes = useStyles();
-    
-    useEffect(() => {
-        if (componentState.redirect)
-            dispatch({
-                type: "UPDATE_MOVIE",
-                payload: { movie: { ...componentState.updatedMovieDetails } }
-            })
-    }, [componentState])
+	const movieId = match.params.id;
+	let [editedMovie, setEditedMovie] = useState(null);
 
-    useEffect(() => {
-        componentState.redirect && history.push(moviesManagementUrl)
-    })
+	useEffect(() => {
+		if (!editedMovie)
+			Movie.findMovie(movieId)
+				.then(movie => setEditedMovie(movie))
+				.catch(error => console.log(error));
+	});
 
+	var { moviesManagementUrl } = useContext(MoviesManagementContext);
+	var history = useHistory();
+	var classes = useStyles();
 
-    return (
-        <Grid item>
-            {editedMovie ?
-                <Box>
-                    <Typography 
-                        variant="h4"
-                        className={classes.title}>
-                        Edit Movie: {`${editedMovie.name}`}
-                    </Typography>
-                    <MovieForm movieDetails={editedMovie} actionText="Update" onSubmitCb={onUpdateMovie} />
-                </Box> : <div>{null}</div>
-            }
-        </Grid>
-    )
+	return (
+		<Grid item>
+			{editedMovie ? (
+				<Box>
+					<Typography variant='h4' className={classes.title}>
+						Edit Movie: {`${editedMovie.name}`}
+					</Typography>
+					<MovieForm
+						movieDetails={editedMovie}
+						actionText='Update'
+						onSubmitCb={onUpdateMovie}
+					/>
+				</Box>
+			) : (
+				<div>Movie not found</div>
+			)}
+		</Grid>
+	);
 
-    async function onUpdateMovie(movieDetails) {
-        var details = { ...movieDetails }
-        details.generes = details.generes.split(',')
-        var updatedMovieDetails = await updateMovie(movieId, details);
-        setComponentState({
-            redirect: true,
-            updatedMovieDetails,
-        })
-    }
+	async function onUpdateMovie(movieDetails) {
+		var details = { ...movieDetails };
+		try {
+			await Movie.updateMovie(movieId, details);
+		} catch (error) {
+			console.log(`error occured: ${error}`);
+		}
+		history.push(moviesManagementUrl);
+	}
 }
-
-
-

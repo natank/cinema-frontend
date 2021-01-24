@@ -20,11 +20,9 @@ import Home from '../components/Home';
 import PrivateRoute from '../components/Auth/PrivateRoute';
 var useStyles = makeStyles(theme => ({
 	root: {
-		minHeight: "100vh",
-		position: "relative"
-
+		minHeight: '100vh',
+		position: 'relative',
 	},
-	
 }));
 function MainView() {
 	var {
@@ -54,34 +52,28 @@ function MainView() {
 	];
 	var classes = useStyles();
 	var location = useLocation();
-	console.log(`Location: ${location}`);
 	return (
 		<Container
 			id='siteContainer'
 			disableGutters
 			className={classes.root}
 			maxWidth={false}>
-			
 			<MainNav routes={mainRoutes} />
-			
-			
-				<Switch>
-					<Route path={moviesManagementUrl}>
-						<PrivateRoute {...{ component: MoviesManagementView }} />
-					</Route>
-					<Route path={membersManagementUrl}>
-						<PrivateRoute {...{ component: SubscriptionsManagementView }} />
-					</Route>
-					<Route path={usersManagementUrl}>
-						<PrivateRoute {...{ component: UsersManagementView }}></PrivateRoute>
-					</Route>
-					<Route exact path={'/'} component={Home} />
-				</Switch>
-			
-			
-				<Footer />
-			
-			
+
+			<Switch>
+				<Route path={moviesManagementUrl}>
+					<PrivateRoute {...{ component: MoviesManagementView }} />
+				</Route>
+				<Route path={membersManagementUrl}>
+					<PrivateRoute {...{ component: SubscriptionsManagementView }} />
+				</Route>
+				<Route path={usersManagementUrl}>
+					<PrivateRoute {...{ component: UsersManagementView }}></PrivateRoute>
+				</Route>
+				<Route exact path={'/'} component={Home} />
+			</Switch>
+
+			<Footer />
 		</Container>
 	);
 }

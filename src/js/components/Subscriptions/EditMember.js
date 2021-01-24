@@ -5,10 +5,9 @@ import { Typography, Box, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 
 import { MainContext } from '../../Context/main-context';
+import * as Member from '../../Model/member-model';
 import MemberForm from './MemberForm';
 import { updateMember } from '../../Model/member-model';
-import { compareItemId } from '../../Utils/utils';
-import { MembersManagementContext } from '../../Context/members-management-context';
 
 var useStyles = makeStyles(theme => ({
 	title: {
@@ -16,34 +15,34 @@ var useStyles = makeStyles(theme => ({
 	},
 }));
 
-export default function EditMember({navIndex, setNavIndex}) {
-	
-	var { store, membersManagementUrl } = useContext(MainContext);
-	var [state, dispatch] = store;
-	var match = useRouteMatch();
-	var memberId = match.params.id;
-	var { members } = state;
+export default function EditMember({ navIndex, setNavIndex }) {
+	const { store, membersManagementUrl } = useContext(MainContext);
+	const match = useRouteMatch();
+	const memberId = match.params.id;
 
-	var [componentState, setComponentState] = useState({
+	var [state, dispatch] = store;
+
+	let [editedMember, setEditedMember] = useState(null);
+	let [componentState, setComponentState] = useState({
 		redirect: false,
 		updatedMemberDetails: {},
 	});
 
-	let editedMember = members.find(compareItemId(memberId));
-
 	var history = useHistory();
 
 	useEffect(() => {
-		if (componentState.redirect)
-			dispatch({
-				type: 'UPDATE_MEMBER',
-				payload: { member: { ...componentState.updatedMemberDetails } },
-			});
-	}, [componentState]);
+		async function getData() {
+			try {
+				let member = await Member.findById(memberId);
+				setEditedMember(member);
+			} catch (err) {
+				console.log(err);
+				throw err;
+			}
+		}
+		if (!editedMember) getData();
+	}, []);
 
-	useEffect(() => {
-		componentState.redirect && history.push(membersManagementUrl);
-	});
 	var classes = useStyles();
 	return (
 		<div>
@@ -58,7 +57,7 @@ export default function EditMember({navIndex, setNavIndex}) {
 							memberDetails={editedMember}
 							actionText='Update'
 							onSubmitCb={onUpdateMember}
-							navIndex={navIndex} 
+							navIndex={navIndex}
 							setNavIndex={setNavIndex}
 						/>
 					) : null}
@@ -71,10 +70,14 @@ export default function EditMember({navIndex, setNavIndex}) {
 
 	async function onUpdateMember(memberDetails) {
 		var details = { ...memberDetails };
-		var updatedMemberDetails = await updateMember(memberId, details);
-		setComponentState({
-			redirect: true,
-			updatedMemberDetails,
-		});
+
+		try {
+			await updateMember(memberId, details);
+			dispatch({ type: 'UPDATE_MEMBER', payload: { member: details } });
+			history.push(membersManagementUrl);
+		} catch (error) {
+			console.log(error);
+			alert('something went wrong, please try later');
+		}
 	}
 }

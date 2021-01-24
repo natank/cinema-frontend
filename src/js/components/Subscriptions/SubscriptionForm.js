@@ -32,7 +32,7 @@ export default function SubscriptionForm({
 	var [state, dispatch] = store;
 	var { members, movies } = state;
 	var classes = useStyles();
-	
+
 	const memberId = memberDetails.id;
 	memberDetails.movies = memberDetails.movies || [];
 
@@ -54,7 +54,7 @@ export default function SubscriptionForm({
 		// check that selected movie id is in movies not watched
 		var isSelectedMovieWatched = !isMovieNotWatched({ id: selectedMovieId });
 		if (isSelectedMovieWatched) {
-			setSelectedMovieId(0)
+			setSelectedMovieId(0);
 		}
 	});
 
@@ -68,23 +68,22 @@ export default function SubscriptionForm({
 					<Grid item>
 						<FormControl className={classes.FormControl}>
 							<InputLabel id='movies-select-label'>Select Movie</InputLabel>
-							{
-							isMovieNotWatched({ id: selectedMovieId }) ?
-							<Select
-								labelId='movies-select-label'
-								id='movies-select'
-								value={selectedMovieId}
-								className={classes.selectEmpty}
-								onChange={function (event) {
-									setSelectedMovieId(event.target.value);
-								}}>
-								<MenuItem value={0}>
-									<em>None</em>
-								</MenuItem>
+							{isMovieNotWatched({ id: selectedMovieId }) ? (
+								<Select
+									labelId='movies-select-label'
+									id='movies-select'
+									value={selectedMovieId}
+									className={classes.selectEmpty}
+									onChange={function (event) {
+										setSelectedMovieId(event.target.value);
+									}}>
+									<MenuItem value={0}>
+										<em>None</em>
+									</MenuItem>
 
-								{MovieOptions()}
-							</Select>:null
-}
+									{MovieOptions()}
+								</Select>
+							) : null}
 						</FormControl>
 					</Grid>
 
@@ -124,7 +123,7 @@ export default function SubscriptionForm({
 	function MovieOptions(props) {
 		var movies = moviesNotWatched.map(movie => {
 			return (
-				<MenuItem key={movie.id} value={movie.id+''}>
+				<MenuItem key={movie.id} value={movie.id + ''}>
 					{movie.name}
 				</MenuItem>
 			);
@@ -132,14 +131,15 @@ export default function SubscriptionForm({
 		return movies;
 	}
 
-
 	function onSubmit(event) {
 		event.preventDefault();
 		if (selectedMovieId == undefined) return;
-
+		let selectedMovie = movies.find(movie => movie.id == selectedMovieId);
 		var subscriptionDetails = {
-			memberId,
-			movieId: selectedMovieId,
+			movie: {
+				name: selectedMovie.name,
+				_id: selectedMovie.id,
+			},
 			date: selectedMovieDate,
 		};
 		onSubscription(subscriptionDetails);

@@ -37,8 +37,8 @@ export function today() {
 }
 
 export function checkAccessToRoute(route, user) {
-	if (!user) return false;
-	if (user.admin || route == '/') return true;
+	if (!(user && user.permissions)) return false;
+	if (user.permissions.isAdmin || route == '/') return true;
 	/**Check access rights to the Memebers and Movies routes */
 	var routePermissions = getRoutePermissions(route);
 	if (!routePermissions) return false;
@@ -85,10 +85,10 @@ function getRoutePermissions(route) {
 			},
 		},
 		{
-			route: new RegExp(`^/movies/edit/\w*`),
+			route: new RegExp(`^/movies/\w*`),
 			permissions: {
 				movies: {
-					edit: true,
+					update: true,
 				},
 			},
 		},
@@ -109,10 +109,10 @@ function getRoutePermissions(route) {
 			},
 		},
 		{
-			route: new RegExp(`^/subscriptions/edit/\w*`),
+			route: new RegExp(`^/subscriptions/\w*`),
 			permissions: {
 				subscriptions: {
-					edit: true,
+					update: true,
 				},
 			},
 		},
@@ -136,4 +136,7 @@ function getRoutePermissions(route) {
 	if (!routePermissions) return null;
 
 	return routePermissions.permissions;
+}
+export function getToken() {
+	return localStorage.getItem('token');
 }
